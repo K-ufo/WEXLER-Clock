@@ -55,16 +55,29 @@ public class ClockActivity extends Activity {
    int hour=now.get(Calendar.HOUR_OF_DAY),minute=now.get(Calendar.MINUTE);
    boolean night = hour >= 20 || hour < 6;
    updateBrightness(night);
-   float W=getWidth(),H=getHeight(),gap=W*0.024f;
-   float cw=Math.min((W*0.88f-gap)/2f,H*0.82f*1.02f);
-   float ch=Math.min(H*0.72f,cw*0.98f);cw=Math.min(cw,ch*1.08f);
-   float x=(W-2*cw-gap)/2f,y=(H-ch)/2f,scale=Math.min(W/1024f,H/600f);
+   float W=getWidth(),H=getHeight();
+   boolean portrait = H > W;
+   float scale=Math.min(W/1024f,H/600f);
+   float gap=portrait ? H*0.025f : W*0.024f;
+   float cw,ch,x,y;
+   if (portrait) {
+    ch=Math.min(H*0.355f,W*0.46f);
+    cw=Math.min(W*0.88f,ch*1.14f);
+    x=(W-cw)/2f;
+    y=(H-(2*ch+gap))/2f-H*0.035f;
+   } else {
+    cw=Math.min((W*0.88f-gap)/2f,H*0.82f*1.02f);
+    ch=Math.min(H*0.72f,cw*0.98f);
+    cw=Math.min(cw,ch*1.08f);
+    x=(W-2*cw-gap)/2f;
+    y=(H-ch)/2f-H*0.035f;
+   }
    card(canvas,String.format(java.util.Locale.US,"%02d",hour),x,y,cw,ch,scale,night);
-   card(canvas,String.format(java.util.Locale.US,"%02d",minute),x+cw+gap,y,cw,ch,scale,night);
+   card(canvas,String.format(java.util.Locale.US,"%02d",minute),portrait ? x : x+cw+gap,portrait ? y+ch+gap : y,cw,ch,scale,night);
    String date=weekdays[now.get(Calendar.DAY_OF_WEEK)-1]+", "+now.get(Calendar.DAY_OF_MONTH)+" "+months[now.get(Calendar.MONTH)]+" "+now.get(Calendar.YEAR);
    p.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));p.setTextAlign(Paint.Align.CENTER);
    p.setColor(night ? Color.rgb(50,50,50) : Color.rgb(105,105,105));p.setTextSize(Math.max(16f,H*0.052f));
-   canvas.drawText(date,W/2f,Math.min(H-8f,y+ch+H*0.105f),p);
+   canvas.drawText(date,W/2f,Math.min(H-8f,(portrait ? y+2*ch+gap : y+ch)+H*0.09f),p);
    postInvalidateDelayed(1000);
   }
  }
