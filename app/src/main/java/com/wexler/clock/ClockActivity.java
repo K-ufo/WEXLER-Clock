@@ -1,5 +1,8 @@
 package com.wexler.clock;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.view.MotionEvent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,6 +19,19 @@ public class ClockActivity extends Activity {
   lp.screenBrightness = 0.35f;
   getWindow().setAttributes(lp);
   setContentView(new FlipView(this));
+  getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+   @Override public void onSystemUiVisibilityChange(int visibility) {
+    getWindow().getDecorView().postDelayed(new Runnable() {
+     @Override public void run() { hideBars(); }
+    }, 120);
+   }
+  });
+ }
+ void hideBars() {
+  getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LOW_PROFILE);
+ }
+ void confirmExit() {
+  new AlertDialog.Builder(this).setTitle("Выйти из часов?").setNegativeButton("Отмена",new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int w){hideBars();}}).setPositiveButton("Выйти",new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int w){finish();}}).show();
  }
  @Override public void onWindowFocusChanged(boolean focused) {
   super.onWindowFocusChanged(focused);
@@ -23,6 +39,14 @@ public class ClockActivity extends Activity {
  }
  static class FlipView extends View {
   Paint p = new Paint(3);
+  long downAt;
+  boolean shownExit;
+  @Override public boolean onTouchEvent(MotionEvent e) {
+   if (e.getAction()==MotionEvent.ACTION_DOWN) { downAt=android.os.SystemClock.uptimeMillis(); shownExit=false; return true; }
+   if (e.getAction()==MotionEvent.ACTION_MOVE && !shownExit && android.os.SystemClock.uptimeMillis()-downAt>=3000) { shownExit=true; ((ClockActivity)getContext()).confirmExit(); return true; }
+   if (e.getAction()==MotionEvent.ACTION_UP && !shownExit && android.os.SystemClock.uptimeMillis()-downAt>=3000) { shownExit=true; ((ClockActivity)getContext()).confirmExit(); }
+   return true;
+  }
   int lastNightMode = -1;
   final String[] weekdays = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
   final String[] months = {"января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"};
