@@ -1,0 +1,2 @@
+plugins { id 'com.android.application' }
+android { namespace 'com.wexler.clock'; compileSdk 35; defaultConfig { applicationId 'com.wexler.clock'; minSdk 16; targetSdk 28; versionCode 1; versionName '1.0' } }
